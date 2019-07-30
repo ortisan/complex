@@ -1,0 +1,19 @@
+sudo: required
+services:
+  - docker
+before_install:
+  - docker build -t tentativafc/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run tentativafc/react-test npm test -- --coverage
+after_success:
+  - docker build -t tentativafc/complex-api ./api
+  - docker build -t tentativafc/complex-client ./client
+  - docker build -t tentativafc/complex-nginx ./nginx
+  - docker build -t tentativafc/complex-worker ./worker
+  ### Login into docker cli
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push tentativafc/complex-api
+  - docker push tentativafc/complex-client 
+  - docker push tentativafc/complex-nginx
+  - docker push tentativafc/complex-worker
